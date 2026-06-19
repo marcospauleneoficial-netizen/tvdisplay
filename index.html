@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Sala dos Professores</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg-0:#0b0e10;
+    --bg-1:#11161a;
+    --panel:#161c20;
+    --amber:#ffb347;
+    --amber-dim:#7a5a26;
+    --green:#7ddc8c;
+    --green-dim:#3a5a3f;
+    --grey-line:#2a3338;
+    --text-soft:#aab4ba;
+    --text-bright:#f2efe6;
+    --red:#e2614f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background: var(--bg-0);
+    background-image:
+      radial-gradient(circle at 50% -10%, rgba(255,179,71,.05), transparent 55%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,.012) 0 2px, transparent 2px 4px);
+    color: var(--text-bright);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    overflow:hidden;
+  }
+  .stage{
+    display:grid;
+    grid-template-columns: 1.15fr 2fr;
+    grid-template-rows: auto 1fr;
+    gap: 22px;
+    height:100vh;
+    padding: 26px 30px;
+  }
+
+  /* ===== TOP BAR ===== */
+  .topbar{
+    grid-column: 1 / 3;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom: 1px solid var(--grey-line);
+    padding-bottom: 16px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:14px;
+  }
+  .brand .dot{
+    width:12px; height:12px; border-radius:50%; background: var(--green);
+    box-shadow: 0 0 10px var(--green); animation: pulse 2.4s infinite ease-in-out;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .brand h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size: 1.5rem; letter-spacing:.5px; margin:0; color: var(--text-bright);
+  }
+  .brand .sub{ font-size:.78rem; color: var(--text-soft); letter-spacing:2px; text-transform:uppercase; margin-top:2px;}
+
+  .clock-date{ text-align:right; }
+  .clock{
+    font-family:'Space Mono',monospace; font-weight:700; font-size: 3rem;
+    color: var(--amber); letter-spacing:1px; line-height:1;
+    text-shadow: 0 0 18px rgba(255,179,71,.35);
+  }
+  .clock .secs{ color: var(--amber-dim); font-size:1.6rem; }
+  .date-line{ font-size:1rem; color: var(--text-soft); margin-top:4px; text-transform:capitalize; }
+
+  /* ===== LEFT COLUMN : WEATHER ===== */
+  .col-left{ display:flex; flex-direction:column; gap:18px; min-height:0; }
+
+  .panel{
+    background: var(--panel);
+    border:1px solid var(--grey-line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    position:relative;
+  }
+  .panel-label{
+    font-size:.7rem; letter-spacing:2.5px; text-transform:uppercase; color: var(--text-soft);
+    display:flex; align-items:center; gap:8px; margin-bottom:14px;
+  }
+  .panel-label::after{ content:""; flex:1; height:1px; background: var(--grey-line); }
+
+  .weather-panel{ flex:0 0 auto; }
+  .weather-main{ display:flex; align-items:center; gap:18px; }
+  .weather-icon{ font-size:4.2rem; line-height:1; filter: drop-shadow(0 0 10px rgba(255,179,71,.25)); }
+  .weather-temp{ font-family:'Space Mono',monospace; font-size:3.2rem; font-weight:700; color: var(--text-bright); }
+  .weather-temp sup{ font-size:1.6rem; color: var(--text-soft); }
+  .weather-desc{ font-size:1.05rem; color: var(--text-soft); margin-top:2px; text-transform:capitalize; }
+  .weather-meta{
+    display:flex; gap:18px; margin-top:16px; padding-top:14px; border-top:1px dashed var(--grey-line);
+  }
+  .weather-meta div{ flex:1; text-align:center; }
+  .weather-meta .num{ font-family:'Space Mono',monospace; font-size:1.25rem; color: var(--amber); }
+  .weather-meta .lbl{ font-size:.66rem; color: var(--text-soft); text-transform:uppercase; letter-spacing:1px; margin-top:2px;}
+  .weather-loc{ font-size:.78rem; color: var(--text-soft); margin-top:14px; }
+
+  .status-panel{ flex:1; display:flex; flex-direction:column; min-height:0; }
+  .status-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--grey-line); }
+  .status-row:last-child{ border-bottom:none; }
+  .status-row .ico{ font-size:1.4rem; }
+  .status-row .name{ flex:1; font-size:.92rem; color: var(--text-bright); font-weight:600;}
+  .status-pill{
+    font-size:.66rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px;
+  }
+  .status-pill.ok{ background: rgba(125,220,140,.12); color: var(--green); border:1px solid var(--green-dim); }
+  .status-pill.bad{ background: rgba(226,97,79,.12); color: var(--red); border:1px solid #5a3530; }
+
+  /* ===== RIGHT COLUMN : BOARD ===== */
+  .col-right{ display:flex; flex-direction:column; min-height:0; }
+  .board-panel{ flex:1; display:flex; flex-direction:column; min-height:0; }
+  .board-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 6px;}
+  .board-title{ font-family:'Archivo Black',sans-serif; font-size:1.3rem; color: var(--text-bright); }
+  .board-title .res-name{ color: var(--amber); }
+  .board-day{ font-size:.85rem; color: var(--text-soft); text-transform:capitalize; }
+
+  .turno-block{ margin-top: 14px; }
+  .turno-head{
+    font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color: var(--amber);
+    display:flex; align-items:center; gap:10px; margin-bottom:8px;
+  }
+  .turno-head::after{ content:""; flex:1; height:1px; background: var(--amber-dim); opacity:.4;}
+
+  .board-table{ width:100%; border-collapse:collapse; }
+  .board-table td{ padding: 0; }
+  .flap-row{
+    display:grid;
+    grid-template-columns: 70px 130px 1fr 170px;
+    align-items:center;
+    gap: 14px;
+    background: var(--bg-1);
+    border:1px solid var(--grey-line);
+    border-radius: 8px;
+    padding: 13px 16px;
+    margin-bottom: 9px;
+    transition: background .3s ease, border-color .3s ease;
+  }
+  .flap-row.live{
+    border-color: var(--amber-dim);
+    background: linear-gradient(90deg, rgba(255,179,71,.10), var(--bg-1) 35%);
+    box-shadow: 0 0 0 1px rgba(255,179,71,.25) inset;
+  }
+  .flap-row.empty{ opacity:.55; }
+  .flap-period{
+    font-family:'Space Mono',monospace; font-weight:700; color: var(--amber); font-size:1rem; text-align:center;
+    background: rgba(255,179,71,.08); border-radius:6px; padding:4px 0;
+  }
+  .flap-time{ font-family:'Space Mono',monospace; color: var(--text-soft); font-size:.92rem; }
+  .flap-prof{ font-size: 1.05rem; font-weight:700; color: var(--text-bright); }
+  .flap-prof.vazio{ color: var(--text-soft); font-weight:400; font-style:italic; }
+  .flap-tag{ text-align:right; font-size:.7rem; letter-spacing:1px; text-transform:uppercase; }
+  .flap-tag.now{ color: var(--green); font-weight:700; }
+  .flap-tag.next{ color: var(--text-soft); }
+  .flap-tag.done{ color: #5a6268; }
+  .flap-tag.blocked{ color: var(--red); font-weight:700; }
+
+  .empty-day{
+    flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;
+    color: var(--text-soft); font-size:1.1rem; text-align:center;
+  }
+  .empty-day .big{ font-size:3rem; }
+
+  .footer-note{
+    margin-top:10px; font-size:.7rem; color: var(--text-soft); text-align:right; letter-spacing:.5px;
+  }
+
+  @media (max-width: 1000px){
+    .stage{ grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+    .topbar{ grid-column: 1; flex-direction:column; align-items:flex-start; gap:10px;}
+    .clock-date{ text-align:left; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <h1>Mural de Horários</h1>
+        <div class="sub">Sala de Informática · Painel ao vivo</div>
+      </div>
+    </div>
+    <div class="clock-date">
+      <div class="clock" id="clock">--:--<span class="secs">:--</span></div>
+      <div class="date-line" id="date-line">carregando data...</div>
+    </div>
+  </div>
+
+  <div class="col-left">
+    <div class="panel weather-panel">
+      <div class="panel-label">Clima agora · Belo Horizonte</div>
+      <div class="weather-main">
+        <div class="weather-icon" id="weather-icon">⛅</div>
+        <div>
+          <div class="weather-temp" id="weather-temp">--<sup>°C</sup></div>
+          <div class="weather-desc" id="weather-desc">carregando...</div>
+        </div>
+      </div>
+      <div class="weather-meta">
+        <div><div class="num" id="weather-feels">--°</div><div class="lbl">Sensação</div></div>
+        <div><div class="num" id="weather-wind">-- km/h</div><div class="lbl">Vento</div></div>
+        <div><div class="num" id="weather-min-max">--/--°</div><div class="lbl">Mín / Máx</div></div>
+      </div>
+      <div class="weather-loc">📍 Belo Horizonte, MG</div>
+    </div>
+
+    <div class="panel status-panel">
+      <div class="panel-label">Status dos recursos hoje</div>
+      <div id="status-list"></div>
+    </div>
+  </div>
+
+  <div class="col-right">
+    <div class="panel board-panel">
+      <div class="board-head">
+        <div class="board-title">Reservas — <span class="res-name">Informática</span></div>
+        <div class="board-day" id="board-day">--</div>
+      </div>
+      <div id="board-body" style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column;"></div>
+      <div class="footer-note">atualização automática em tempo real</div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCi62yDjL4ayE3JoCP-m8dDpyEb1jIiZis",
+  authDomain: "agendamento-escolar-86843.firebaseapp.com",
+  projectId: "agendamento-escolar-86843",
+  storageBucket: "agendamento-escolar-86843.firebasestorage.app",
+  messagingSenderId: "339474137748",
+  appId: "1:339474137748:web:94412cb05e597f7e9cea81"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const reservasCol = collection(db, "reservas");
+const statusCol = collection(db, "status");
+
+const RESOURCES = [
+  {id:'informatica', label:'Informática', icon:'💻'},
+  {id:'tablets', label:'Tablets', icon:'📱'},
+  {id:'tela', label:'Tela Interativa', icon:'🖥️'},
+  {id:'biblioteca', label:'Biblioteca', icon:'📚'},
+  {id:'video', label:'Sala de Vídeo', icon:'🎬'},
+];
+
+const DAY_NAMES = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+// Horários padrão de referência (apenas para destacar o período "em andamento")
+const TIME_TABLE = {
+  'Manhã': [
+    {periodo:1, start:'07:00', end:'07:50'},
+    {periodo:2, start:'07:50', end:'08:40'},
+    {periodo:3, start:'08:40', end:'09:30'},
+    {periodo:4, start:'09:50', end:'10:40'},
+    {periodo:5, start:'10:40', end:'11:30'},
+  ],
+  'Tarde': [
+    {periodo:1, start:'13:00', end:'13:50'},
+    {periodo:2, start:'13:50', end:'14:40'},
+    {periodo:3, start:'14:40', end:'15:30'},
+    {periodo:4, start:'15:50', end:'16:40'},
+    {periodo:5, start:'16:40', end:'17:30'},
+  ]
+};
+
+let reservations = {};
+let statuses = {};
+
+function pad(n){ return n.toString().padStart(2,'0'); }
+
+function timeToMinutes(t){
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clock').innerHTML =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}<span class="secs">:${pad(now.getSeconds())}</span>`;
+  const dateStr = now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('date-line').textContent = dateStr;
+  return now;
+}
+
+function currentWeekdayName(now){
+  return DAY_NAMES[now.getDay()];
+}
+
+function classifySlot(turno, periodo, now){
+  const slot = TIME_TABLE[turno]?.find(s=>s.periodo===periodo);
+  if(!slot) return 'done';
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const start = timeToMinutes(slot.start);
+  const end = timeToMinutes(slot.end);
+  if(nowMin >= start && nowMin < end) return 'now';
+  if(nowMin < start) return 'next';
+  return 'done';
+}
+
+function renderBoard(now){
+  const todayName = currentWeekdayName(now);
+  document.getElementById('board-day').textContent = todayName === 'Domingo' || todayName === 'Sábado'
+    ? `Hoje é ${todayName} — sem aulas`
+    : `Hoje é ${todayName}-feira`.replace('Segunda-feira','Segunda-feira');
+
+  const body = document.getElementById('board-body');
+
+  if(todayName === 'Domingo' || todayName === 'Sábado'){
+    body.innerHTML = `<div class="empty-day"><span class="big">🌤️</span>Não há aulas hoje. Bom descanso!</div>`;
+    return;
+  }
+
+  const st = statuses['informatica'];
+  if(st && st.blocked){
+    body.innerHTML = `<div class="empty-day"><span class="big">🚫</span>
+      Informática indisponível hoje<br><span style="font-size:.85rem;">Motivo: ${escapeHtml(st.reason||'problema técnico')}</span></div>`;
+    return;
+  }
+
+  let html = '';
+  ['Manhã','Tarde'].forEach(turno=>{
+    html += `<div class="turno-block"><div class="turno-head">${turno}</div>`;
+    TIME_TABLE[turno].forEach(slot=>{
+      const key = `informatica__${todayName}__${turno}__${slot.periodo}`;
+      const res = reservations[key];
+      const state = classifySlot(turno, slot.periodo, now);
+      const rowClasses = ['flap-row'];
+      if(state==='now') rowClasses.push('live');
+      if(!res) rowClasses.push('empty');
+
+      let tagHtml = '';
+      if(state==='now') tagHtml = '<span class="flap-tag now">● agora</span>';
+      else if(state==='next') tagHtml = '<span class="flap-tag next">a seguir</span>';
+      else tagHtml = '<span class="flap-tag done">encerrado</span>';
+
+      html += `<div class="${rowClasses.join(' ')}">
+        <div class="flap-period">${slot.periodo}º</div>
+        <div class="flap-time">${slot.start}–${slot.end}</div>
+        <div class="flap-prof ${res ? '' : 'vazio'}">${res ? escapeHtml(res.professor) : 'Livre'}</div>
+        ${tagHtml}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+}
+
+function renderStatusList(){
+  const list = document.getElementById('status-list');
+  list.innerHTML = RESOURCES.map(r=>{
+    const st = statuses[r.id];
+    const blocked = st && st.blocked;
+    return `<div class="status-row">
+      <span class="ico">${r.icon}</span>
+      <span class="name">${r.label}</span>
+      <span class="status-pill ${blocked ? 'bad' : 'ok'}">${blocked ? 'com problema' : 'ok'}</span>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function tick(){
+  const now = updateClock();
+  renderBoard(now);
+}
+
+// Firestore listeners (tempo real)
+onSnapshot(reservasCol, (snap)=>{
+  reservations = {};
+  snap.forEach(d=>{ reservations[d.id] = d.data(); });
+  renderBoard(new Date());
+});
+onSnapshot(statusCol, (snap)=>{
+  statuses = {};
+  snap.forEach(d=>{ statuses[d.id] = d.data(); });
+  renderStatusList();
+  renderBoard(new Date());
+});
+
+setInterval(tick, 1000);
+tick();
+renderStatusList();
+
+// ===== CLIMA (Open-Meteo, Belo Horizonte) =====
+const LAT = -19.9167, LON = -43.9345;
+
+const WEATHER_MAP = {
+  0:['Céu limpo','☀️'], 1:['Predomínio de sol','🌤️'], 2:['Parcialmente nublado','⛅'], 3:['Nublado','☁️'],
+  45:['Neblina','🌫️'], 48:['Neblina','🌫️'],
+  51:['Garoa leve','🌦️'], 53:['Garoa','🌦️'], 55:['Garoa forte','🌧️'],
+  61:['Chuva leve','🌧️'], 63:['Chuva','🌧️'], 65:['Chuva forte','⛈️'],
+  71:['Neve leve','🌨️'], 73:['Neve','🌨️'], 75:['Neve forte','❄️'],
+  80:['Pancadas de chuva','🌦️'], 81:['Pancadas de chuva','🌧️'], 82:['Pancadas fortes','⛈️'],
+  95:['Trovoadas','⛈️'], 96:['Trovoadas c/ granizo','⛈️'], 99:['Trovoadas fortes','⛈️'],
+};
+
+async function loadWeather(){
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FSao_Paulo`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const cur = data.current;
+    const [desc, icon] = WEATHER_MAP[cur.weather_code] || ['Tempo variável','⛅'];
+
+    document.getElementById('weather-icon').textContent = icon;
+    document.getElementById('weather-temp').innerHTML = `${Math.round(cur.temperature_2m)}<sup>°C</sup>`;
+    document.getElementById('weather-desc').textContent = desc;
+    document.getElementById('weather-feels').textContent = `${Math.round(cur.apparent_temperature)}°`;
+    document.getElementById('weather-wind').textContent = `${Math.round(cur.wind_speed_10m)} km/h`;
+    if(data.daily){
+      const max = Math.round(data.daily.temperature_2m_max[0]);
+      const min = Math.round(data.daily.temperature_2m_min[0]);
+      document.getElementById('weather-min-max').textContent = `${min}/${max}°`;
+    }
+  }catch(e){
+    console.error('Erro ao buscar clima', e);
+    document.getElementById('weather-desc').textContent = 'Não foi possível obter o clima';
+  }
+}
+loadWeather();
+setInterval(loadWeather, 15 * 60 * 1000); // atualiza a cada 15 min
+</script>
+</body>
+</html>
